@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DuoTemps</title>
+    <link rel="stylesheet" href="./app.css">
+    <script src="./config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🌡️ DuoTemps</h1>
+
+        <!-- Weather Data Section -->
+        <div class="input-section">
+            <div class="input-group">
+                <label for="city-input">City Name</label>
+                <div style="position: relative;">
+                    <input type="text" id="city-input" value="" placeholder="Enter city name or select from recent" style="padding: 12px 40px 12px 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%;">
+                    <button id="city-dropdown-btn" type="button" style="position: absolute; right: 2px; top: 2px; bottom: 2px; width: 36px; background: #f0f0f0; border: none; border-radius: 0 6px 6px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px;">▼</button>
+                    <div id="city-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #667eea; border-radius: 8px; margin-top: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+                </div>
+            </div>
+            <div class="input-group" style="display: flex; flex-direction: row; align-items: flex-end; gap: 10px;">
+                <button id="fetch-weather" style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; flex: 1; transition: background 0.3s;">
+                    Fetch
+                </button>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap;">
+                    <input type="checkbox" id="auto-update" style="width: 18px; height: 18px; cursor: pointer;">
+                    Auto Update (10 mins)
+                </label>
+            </div>
+        </div>
+
+        <div id="weather-status" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; display: none;"></div>
+
+        <!-- Temperature Input Section -->
+        <div class="input-section">
+            <div class="input-group">
+                <label for="celsius">Celsius (°C)</label>
+                <input type="number" id="celsius" value="0" min="-50" max="60" step="1">
+            </div>
+            <div class="input-group">
+                <label for="fahrenheit">Fahrenheit (°F)</label>
+                <input type="number" id="fahrenheit" value="32" min="-58" max="140" step="1">
+            </div>
+        </div>
+
+        <!-- Thermometer Visualization Section -->
+        <div class="thermometer-section">
+            <!-- Celsius Thermometer -->
+            <div class="thermometer-container">
+<!--
+                <div class="thermometer-title">Celsius (°C)</div>
+-->
+                <div class="feels-like-display">
+                    <div class="label">Feels Like</div>
+                    <div class="value" id="feels-like-c">0.0°C</div>
+                    <div class="method" id="method-c">Actual Temperature</div>
+                </div>
+                <div class="thermometer-display">
+                    <div class="thermometer-scale">
+                        <span>60°</span>
+                        <span>40°</span>
+                        <span>20°</span>
+                        <span>0°</span>
+                        <span>-20°</span>
+                        <span>-40°</span>
+                    </div>
+                    <div class="thermometer-wrapper">
+                        <div class="thermometer" id="thermometer-c">
+                            <div class="thermometer-fill" id="fill-c"></div>
+                            <div class="thermometer-marker" id="marker-c"></div>
+                            <!-- Threshold lines for Wind Chill and Heat Index -->
+                            <div class="threshold-line" id="wind-chill-line" title="Wind Chill applies at or below 10°C">
+                                <span class="threshold-label">← Wind Chill (10°C)</span>
+                            </div>
+                            <div class="threshold-line" id="heat-index-line" title="Heat Index applies at or above 27°C">
+                                <span class="threshold-label">← Heat Index (27°C)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fahrenheit Thermometer -->
+            <div class="thermometer-container">
+<!--
+                <div class="thermometer-title">Fahrenheit (°F)</div>
+-->
+                <div class="feels-like-display">
+                    <div class="label">Feels Like</div>
+                    <div class="value" id="feels-like-f">32.0°F</div>
+                    <div class="method" id="method-f">Actual Temperature</div>
+                </div>
+                <div class="thermometer-display">
+                    <div class="thermometer-scale">
+                        <span>140°</span>
+                        <span>104°</span>
+                        <span>68°</span>
+                        <span>32°</span>
+                        <span>-4°</span>
+                        <span>-40°</span>
+                    </div>
+                    <div class="thermometer-wrapper">
+                        <div class="thermometer" id="thermometer-f">
+                            <div class="thermometer-fill" id="fill-f"></div>
+                            <div class="thermometer-marker" id="marker-f"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orientation Toggle Button -->
+        <div class="orientation-toggle">
+            <button id="toggle-orientation">Toggle Orientation</button>
+        </div>
+
+        <!-- Environmental Inputs Section -->
+        <div class="environmental-section">
+            <div class="environmental-title">Environmental Conditions</div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Wind Speed</span>
+                    <span class="slider-value"><span id="wind-value">10</span> km/h</span>
+                </div>
+                <input type="range" id="wind-speed" min="0" max="100" value="10" step="1">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Humidity</span>
+                    <span class="slider-value"><span id="humidity-value">50</span> %</span>
+                </div>
+                <input type="range" id="humidity" min="0" max="100" value="50" step="1">
+            </div>
+        </div>
+
+        <!-- Information Section -->
+        <div class="info-section">
+            <h3>📊 About Feels-Like Temperature</h3>
+            <p>
+                <strong>Wind Chill:</strong> Applies when temperature is ≤10°C and wind speed is ≥5 km/h.
+                Uses <a href="https://www.canada.ca/en/services/environment/weather/severeweather/wind-chill-index.html#toc3" target="_blank">Environment Canada formula</a> to calculate heat loss from exposed skin.
+                <br><br>
+                <strong>Heat Index:</strong> Applies when temperature is between 27°C and 43°C (80-110°F).
+                Uses <a href="https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml" target="_blank">NOAA Rothfusz regression</a> to calculate apparent temperature based on humidity levels.
+                <br><br>
+                <strong>Feels Like:</strong> Shows actual temperature when conditions don't meet thresholds for Wind Chill or Heat Index.
+            </p>
+        </div>
+    </div>
+
+    <script src="./app.js"></script>
+</body>
+</html>
