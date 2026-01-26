@@ -1,3 +1,203 @@
+// =============================================================================
+// API KEY MANAGEMENT
+// =============================================================================
+
+/**
+ * Get the API key from various sources in order of priority:
+ * 1. GitHub Actions secret (via URL parameter)
+ * 2. localStorage (user-entered key)
+ * 3. config.js (if valid)
+ */
+function getApiKey() {
+    // Check for GitHub Actions secret via URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const userParam = urlParams.get('user');
+    
+    if (userParam) {
+        // When user parameter is present, try to fetch from GitHub Actions
+        // This assumes you've set up a GitHub Actions workflow that injects the key
+        const githubApiKey = window.GITHUB_WEATHER_API_KEY;
+        if (githubApiKey && githubApiKey !== 'your_actual_api_key_here') {
+            return githubApiKey;
+        }
+    }
+    
+    // Check localStorage for user-entered API key
+    const storedKey = localStorage.getItem('weatherApiKey');
+    if (storedKey && storedKey !== 'your_actual_api_key_here') {
+        return storedKey;
+    }
+    
+    // Check config.js
+    if (typeof WEATHER_API_KEY !== 'undefined' && 
+        WEATHER_API_KEY && 
+        WEATHER_API_KEY !== 'your_actual_api_key_here') {
+        return WEATHER_API_KEY;
+    }
+    
+    return null;
+}
+
+/**
+ * Prompt user to enter their API key
+ */
+function promptForApiKey() {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 500px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    `;
+    
+    dialog.innerHTML = `
+        <h2 style="margin-top: 0; color: #333;">🔑 API Key Required</h2>
+        <p style="color: #666; line-height: 1.6;">
+            To use the weather features, you need an OpenWeatherMap API key.
+        </p>
+        <ol style="color: #666; line-height: 1.8; padding-left: 20px;">
+            <li>Visit <a href="https://openweathermap.org/api" target="_blank" style="color: #667eea;">OpenWeatherMap</a></li>
+            <li>Sign up for a free account</li>
+            <li>Get your API key from your account page</li>
+            <li>Paste it below (it will be saved in your browser)</li>
+        </ol>
+        <input 
+            type="text" 
+            id="api-key-input" 
+            placeholder="Enter your API key here"
+            style="
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                font-size: 14px;
+                margin: 15px 0;
+                box-sizing: border-box;
+            "
+        >
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button 
+                id="cancel-btn"
+                style="
+                    padding: 10px 20px;
+                    background: #ddd;
+                    color: #333;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                "
+            >Cancel</button>
+            <button 
+                id="save-api-key-btn"
+                style="
+                    padding: 10px 20px;
+                    background: #667eea;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 600;
+                "
+            >Save API Key</button>
+        </div>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+            <button 
+                id="manage-api-key-later"
+                style="
+                    padding: 8px 16px;
+                    background: transparent;
+                    color: #667eea;
+                    border: 1px solid #667eea;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    width: 100%;
+                "
+            >Skip for now (weather features will be disabled)</button>
+        </div>
+    `;
+    
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+    
+    const input = document.getElementById('api-key-input');
+    const saveBtn = document.getElementById('save-api-key-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const skipBtn = document.getElementById('manage-api-key-later');
+    
+    input.focus();
+    
+    return new Promise((resolve) => {
+        saveBtn.addEventListener('click', () => {
+            const apiKey = input.value.trim();
+            if (apiKey) {
+                localStorage.setItem('weatherApiKey', apiKey);
+                document.body.removeChild(modal);
+                resolve(apiKey);
+            } else {
+                input.style.borderColor = '#ff4757';
+                input.placeholder = 'Please enter a valid API key';
+            }
+        });
+        
+        cancelBtn.addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(null);
+        });
+        
+        skipBtn.addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(null);
+        });
+        
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveBtn.click();
+            }
+        });
+    });
+}
+
+/**
+ * Show API key management in settings
+ */
+function showApiKeySettings() {
+    const currentKey = localStorage.getItem('weatherApiKey');
+    const maskedKey = currentKey ? 
+        currentKey.substring(0, 8) + '...' + currentKey.substring(currentKey.length - 4) : 
+        'Not set';
+    
+    const result = confirm(
+        `Current API Key: ${maskedKey}\n\n` +
+        `Click OK to enter a new API key, or Cancel to keep the current one.`
+    );
+    
+    if (result) {
+        promptForApiKey();
+    }
+}
+
+// =============================================================================
+// TEMPERATURE CALCULATIONS
+// =============================================================================
+
 // Temperature range constants for visualization
 const MIN_TEMP_C = -50;
 const MAX_TEMP_C = 60;
@@ -468,12 +668,6 @@ function getTimestamp() {
 
 // OpenWeatherMap API key
 // Will be loaded from config.js if it exists, otherwise uses placeholder
-let API_KEY = 'YOUR_API_KEY_HERE';
-
-// Check if config.js loaded the API key
-if (typeof WEATHER_API_KEY !== 'undefined') {
-    API_KEY = WEATHER_API_KEY;
-}
 
 /**
  * Display status message to the user
@@ -524,12 +718,20 @@ async function fetchWeatherData() {
         return;
     }
 
+    let apiKey = getApiKey();
+    if (!apiKey) {
+        apiKey = await promptForApiKey();
+        if (!apiKey) {
+            showStatus('API key is required to fetch weather data', 'error');
+            return;
+        }
+    }
     showStatus('Fetching weather data...', 'info');
 
     try {
         // Using OpenWeatherMap API (free tier)
         const response = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`
+            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`
         );
 
         if (!response.ok) {

@@ -4,9 +4,9 @@ Configuration
 
 To use this file:
 1. Get a free API key from https://openweathermap.org/api
-2. Replace 'your_actual_api_key_here' below with your API key
-3. Save this file in the same directory as index.html
-4. Customize other settings as needed
+2. Users will be prompted to enter their API key on first use
+3. The API key will be stored in browser localStorage
+4. For GitHub Pages with Actions secrets: use ?user=username URL parameter
 
 =====================================================================
 */
