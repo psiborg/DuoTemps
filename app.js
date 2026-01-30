@@ -866,6 +866,7 @@ function applyThermometerOrientation() {
     const thermometerScales = document.querySelectorAll('.thermometer-scale');
     const thresholdLines = document.querySelectorAll('.threshold-line');
     const thresholdLabels = document.querySelectorAll('.threshold-label');
+    const orientationIcon = document.getElementById('orientation-icon');
 
     if (orientation === 'horizontal') {
         thermometerSection.classList.add('horizontal');
@@ -878,6 +879,7 @@ function applyThermometerOrientation() {
         thermometerScales.forEach(scale => scale.classList.add('horizontal'));
         thresholdLines.forEach(line => line.classList.add('horizontal'));
         thresholdLabels.forEach(label => label.classList.add('horizontal'));
+        orientationIcon.textContent = '↔️';
     } else {
         thermometerSection.classList.remove('horizontal');
         thermometerContainers.forEach(container => container.classList.remove('horizontal'));
@@ -889,6 +891,7 @@ function applyThermometerOrientation() {
         thermometerScales.forEach(scale => scale.classList.remove('horizontal'));
         thresholdLines.forEach(line => line.classList.remove('horizontal'));
         thresholdLabels.forEach(label => label.classList.remove('horizontal'));
+        orientationIcon.textContent = '↕️';
     }
 
     // Update display to recalculate positions
@@ -913,6 +916,7 @@ function toggleOrientation() {
     const thermometerScales = document.querySelectorAll('.thermometer-scale');
     const thresholdLines = document.querySelectorAll('.threshold-line');
     const thresholdLabels = document.querySelectorAll('.threshold-label');
+    const orientationIcon = document.getElementById('orientation-icon');
 
     if (currentOrientation === 'horizontal') {
         thermometerSection.classList.add('horizontal');
@@ -925,6 +929,7 @@ function toggleOrientation() {
         thermometerScales.forEach(scale => scale.classList.add('horizontal'));
         thresholdLines.forEach(line => line.classList.add('horizontal'));
         thresholdLabels.forEach(label => label.classList.add('horizontal'));
+        orientationIcon.textContent = '↔️';
     } else {
         thermometerSection.classList.remove('horizontal');
         thermometerContainers.forEach(container => container.classList.remove('horizontal'));
@@ -936,6 +941,7 @@ function toggleOrientation() {
         thermometerScales.forEach(scale => scale.classList.remove('horizontal'));
         thresholdLines.forEach(line => line.classList.remove('horizontal'));
         thresholdLabels.forEach(label => label.classList.remove('horizontal'));
+        orientationIcon.textContent = '↕️';
     }
 
     // Update display to recalculate positions
@@ -951,3 +957,29 @@ applyConfigValues();
 
 // Initialize display
 updateDisplay();
+
+// =============================================================================
+// COLLAPSIBLE INFO SECTION
+// =============================================================================
+
+/**
+ * Toggle the info section visibility
+ */
+function toggleInfoSection() {
+    const infoContent = document.getElementById('info-content');
+    const toggleIcon = document.querySelector('.toggle-icon');
+    
+    if (infoContent.style.display === 'none') {
+        infoContent.style.display = 'block';
+        toggleIcon.classList.add('rotated');
+    } else {
+        infoContent.style.display = 'none';
+        toggleIcon.classList.remove('rotated');
+    }
+}
+
+// Add event listener for info toggle
+const infoToggleBtn = document.getElementById('info-toggle');
+if (infoToggleBtn) {
+    infoToggleBtn.addEventListener('click', toggleInfoSection);
+}
