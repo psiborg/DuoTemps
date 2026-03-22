@@ -675,20 +675,10 @@ function getTimestamp() {
 function showStatus(message, type = 'info') {
     weatherStatus.textContent = message;
     weatherStatus.style.display = 'block';
-
-    if (type === 'success') {
-        weatherStatus.style.background = '#d4edda';
-        weatherStatus.style.color = '#155724';
-        weatherStatus.style.border = '1px solid #c3e6cb';
-    } else if (type === 'error') {
-        weatherStatus.style.background = '#f8d7da';
-        weatherStatus.style.color = '#721c24';
-        weatherStatus.style.border = '1px solid #f5c6cb';
-    } else {
-        weatherStatus.style.background = '#d1ecf1';
-        weatherStatus.style.color = '#0c5460';
-        weatherStatus.style.border = '1px solid #bee5eb';
-    }
+    weatherStatus.style.background = '';
+    weatherStatus.style.color = '';
+    weatherStatus.style.border = '';
+    weatherStatus.className = type; // 'success', 'error', or 'info' — styled via CSS variables
 
     // Auto-hide based on config (0 = no auto-hide)
     let hideDelay = 0;
@@ -983,3 +973,40 @@ const infoToggleBtn = document.getElementById('info-toggle');
 if (infoToggleBtn) {
     infoToggleBtn.addEventListener('click', toggleInfoSection);
 }
+
+// =============================================================================
+// DARK THEME TOGGLE
+// =============================================================================
+
+/**
+ * Apply theme (light or dark) and persist to localStorage
+ */
+function applyTheme(isDark) {
+    const body = document.body;
+    const icon = document.getElementById('theme-icon');
+    if (isDark) {
+        body.classList.add('dark-theme');
+        if (icon) icon.textContent = '☀️';
+    } else {
+        body.classList.remove('dark-theme');
+        if (icon) icon.textContent = '🌙';
+    }
+    localStorage.setItem('duotemps-theme', isDark ? 'dark' : 'light');
+}
+
+// Load saved theme preference
+(function initTheme() {
+    const saved = localStorage.getItem('duotemps-theme');
+    // Default to dark if system prefers dark and no saved preference
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved ? saved === 'dark' : prefersDark);
+})();
+
+// Wire up toggle button
+const toggleThemeBtn = document.getElementById('toggle-theme');
+if (toggleThemeBtn) {
+    toggleThemeBtn.addEventListener('click', () => {
+        applyTheme(!document.body.classList.contains('dark-theme'));
+    });
+}
+

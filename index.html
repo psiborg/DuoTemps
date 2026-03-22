@@ -6,12 +6,47 @@
     <title>DuoTemps</title>
     <link rel="stylesheet" href="./app.css">
     <script src="./config.js"></script>
+    <style>
+        #city-input {
+            background: var(--input-bg);
+            color: var(--input-color);
+            border-color: var(--input-border) !important;
+        }
+        #city-dropdown-btn {
+            background: var(--section-bg);
+            color: var(--label-color);
+        }
+        #city-dropdown {
+            background: var(--container-bg);
+            color: var(--input-color);
+        }
+        .dropdown-item {
+            color: var(--input-color);
+            border-bottom-color: var(--input-border);
+        }
+        .dropdown-item:hover {
+            background: var(--section-bg);
+        }
+        #weather-status.info  { background: var(--status-info-bg); color: var(--status-info-color); border: 1px solid var(--info-border); }
+        #weather-status.success { background: var(--status-success-bg); color: var(--status-success-color); border: 1px solid #27ae60; }
+        #weather-status.error { background: var(--status-error-bg); color: var(--status-error-color); border: 1px solid #e74c3c; }
+        label[for="city-input"], .input-group > label {
+            color: var(--label-color);
+        }
+        /* Auto checkbox label */
+        #auto-update + * { color: var(--label-color); }
+        #toggle-theme:hover { background: #5568d3; }
+        #toggle-theme:active { transform: scale(0.95); }
+    </style>
 </head>
 <body>
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h1 style="margin: 0; font-size: 20px;">🌡️ DuoTemps</h1>
             <div style="display: flex; gap: 8px;">
+                <button id="toggle-theme" style="padding: 6px 10px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; line-height: 1;" title="Toggle Dark/Light Theme">
+                    <span id="theme-icon">🌙</span>
+                </button>
                 <button id="toggle-orientation" style="padding: 6px 10px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; line-height: 1;" title="Toggle Orientation">
                     <span id="orientation-icon">↕️</span>
                 </button>

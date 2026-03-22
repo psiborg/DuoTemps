@@ -1,3 +1,65 @@
+:root {
+    --bg-gradient-start: #667eea;
+    --bg-gradient-end: #764ba2;
+    --container-bg: white;
+    --container-shadow: rgba(0, 0, 0, 0.3);
+    --heading-color: #333;
+    --label-color: #555;
+    --input-border: #ddd;
+    --input-bg: white;
+    --input-color: #333;
+    --section-bg: #f8f9fa;
+    --feels-like-bg: white;
+    --feels-like-shadow: rgba(0, 0, 0, 0.1);
+    --feels-like-label: #666;
+    --feels-like-value: #333;
+    --feels-like-method: #999;
+    --slider-bg: #ddd;
+    --thermometer-track: #e0e0e0;
+    --info-bg: #e8f4f8;
+    --info-border: #3498db;
+    --info-btn-color: #2980b9;
+    --info-text: #555;
+    --scale-color: #666;
+    --status-info-bg: #e8f4f8;
+    --status-info-color: #2980b9;
+    --status-success-bg: #e8f8e8;
+    --status-success-color: #27ae60;
+    --status-error-bg: #fde8e8;
+    --status-error-color: #e74c3c;
+}
+
+body.dark-theme {
+    --bg-gradient-start: #1a1a2e;
+    --bg-gradient-end: #16213e;
+    --container-bg: #1e1e2e;
+    --container-shadow: rgba(0, 0, 0, 0.6);
+    --heading-color: #e0e0e0;
+    --label-color: #aaa;
+    --input-border: #444;
+    --input-bg: #2a2a3e;
+    --input-color: #e0e0e0;
+    --section-bg: #252538;
+    --feels-like-bg: #2a2a3e;
+    --feels-like-shadow: rgba(0, 0, 0, 0.3);
+    --feels-like-label: #aaa;
+    --feels-like-value: #e0e0e0;
+    --feels-like-method: #777;
+    --slider-bg: #444;
+    --thermometer-track: #3a3a4e;
+    --info-bg: #1a2a3a;
+    --info-border: #3498db;
+    --info-btn-color: #5dade2;
+    --info-text: #aaa;
+    --scale-color: #888;
+    --status-info-bg: #1a2a3a;
+    --status-info-color: #5dade2;
+    --status-success-bg: #1a2e1a;
+    --status-success-color: #2ecc71;
+    --status-error-bg: #2e1a1a;
+    --status-error-color: #e74c3c;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,28 +68,30 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     min-height: 100vh;
     padding: 8px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    transition: background 0.3s ease;
 }
 
 .container {
-    background: white;
+    background: var(--container-bg);
     border-radius: 12px;
     padding: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px var(--container-shadow);
     max-width: 640px;
     width: 100%;
     max-height: 800px;
     overflow-y: auto;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    color: var(--heading-color);
     font-size: 20px;
 }
 
@@ -45,17 +109,19 @@ h1 {
 
 .input-group label {
     font-weight: 600;
-    color: #555;
+    color: var(--label-color);
     margin-bottom: 4px;
     font-size: 12px;
 }
 
 .input-group input[type="number"] {
     padding: 8px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--input-border);
     border-radius: 6px;
     font-size: 15px;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, background 0.3s, color 0.3s;
+    background: var(--input-bg);
+    color: var(--input-color);
 }
 
 .input-group input[type="number"]:focus {
@@ -69,8 +135,9 @@ h1 {
     gap: 15px;
     margin-bottom: 12px;
     padding: 12px;
-    background: #f8f9fa;
+    background: var(--section-bg);
     border-radius: 8px;
+    transition: background 0.3s ease;
 }
 
 .thermometer-section.horizontal {
@@ -108,8 +175,9 @@ h1 {
     justify-content: space-between;
     height: 220px;
     font-size: 10px;
-    color: #666;
+    color: var(--scale-color);
     padding: 5px 0;
+    transition: color 0.3s ease;
 }
 
 .thermometer-scale.horizontal {
@@ -134,17 +202,19 @@ h1 {
     position: relative;
     width: 30px;
     height: 220px;
-    background: #e0e0e0;
+    background: var(--thermometer-track);
     border-radius: 15px;
     overflow: hidden;
     cursor: pointer;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease;
 }
 
 .thermometer.horizontal {
     width: 220px;
     height: 30px;
     border-radius: 15px;
+    background: var(--thermometer-track);
 }
 
 .thermometer-fill {
@@ -244,27 +314,28 @@ h1 {
 .feels-like-display {
     margin-bottom: 10px;
     padding: 8px;
-    background: white;
+    background: var(--feels-like-bg);
     border-radius: 6px;
     text-align: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px var(--feels-like-shadow);
+    transition: background 0.3s ease;
 }
 
 .feels-like-display .label {
     font-size: 10px;
-    color: #666;
+    color: var(--feels-like-label);
     margin-bottom: 3px;
 }
 
 .feels-like-display .value {
     font-size: 16px;
     font-weight: 700;
-    color: #333;
+    color: var(--feels-like-value);
 }
 
 .feels-like-display .method {
     font-size: 9px;
-    color: #999;
+    color: var(--feels-like-method);
     margin-top: 3px;
     font-style: italic;
 }
@@ -276,8 +347,9 @@ h1 {
 .slider-group {
     margin-bottom: 10px;
     padding: 10px;
-    background: #f8f9fa;
+    background: var(--section-bg);
     border-radius: 6px;
+    transition: background 0.3s ease;
 }
 
 .slider-label {
@@ -285,7 +357,7 @@ h1 {
     justify-content: space-between;
     margin-bottom: 6px;
     font-weight: 500;
-    color: #555;
+    color: var(--label-color);
     font-size: 12px;
 }
 
@@ -298,9 +370,10 @@ input[type="range"] {
     width: 100%;
     height: 6px;
     border-radius: 3px;
-    background: #ddd;
+    background: var(--slider-bg);
     outline: none;
     -webkit-appearance: none;
+    transition: background 0.3s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -333,7 +406,10 @@ input[type="range"]::-moz-range-thumb {
 }
 
 input[type="text"] {
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, background 0.3s, color 0.3s;
+    background: var(--input-bg);
+    color: var(--input-color);
+    border-color: var(--input-border);
 }
 
 input[type="text"]:focus {
@@ -365,10 +441,11 @@ input[type="text"]:focus {
 }
 
 .info-section {
-    background: #e8f4f8;
+    background: var(--info-bg);
     border-radius: 6px;
-    border-left: 3px solid #3498db;
+    border-left: 3px solid var(--info-border);
     overflow: hidden;
+    transition: background 0.3s ease;
 }
 
 #toggle-orientation {
@@ -400,8 +477,9 @@ input[type="text"]:focus {
     align-items: center;
     font-size: 12px;
     font-weight: 600;
-    color: #2980b9;
+    color: var(--info-btn-color);
     text-align: left;
+    transition: color 0.3s ease;
 }
 
 .info-toggle-btn:hover {
@@ -423,9 +501,10 @@ input[type="text"]:focus {
 
 .info-content p {
     font-size: 10px;
-    color: #555;
+    color: var(--info-text);
     line-height: 1.5;
     margin: 0;
+    transition: color 0.3s ease;
 }
 
 .info-content a {
