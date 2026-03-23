@@ -12,7 +12,7 @@ function getApiKey() {
     // Check for GitHub Actions secret via URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const userParam = urlParams.get('user');
-    
+
     if (userParam) {
         // When user parameter is present, try to fetch from GitHub Actions
         // This assumes you've set up a GitHub Actions workflow that injects the key
@@ -21,20 +21,20 @@ function getApiKey() {
             return githubApiKey;
         }
     }
-    
+
     // Check localStorage for user-entered API key
-    const storedKey = localStorage.getItem('weatherApiKey');
+    const storedKey = localStorage.getItem('duotemps_weather_api_key');
     if (storedKey && storedKey !== 'your_actual_api_key_here') {
         return storedKey;
     }
-    
+
     // Check config.js
-    if (typeof WEATHER_API_KEY !== 'undefined' && 
-        WEATHER_API_KEY && 
+    if (typeof WEATHER_API_KEY !== 'undefined' &&
+        WEATHER_API_KEY &&
         WEATHER_API_KEY !== 'your_actual_api_key_here') {
         return WEATHER_API_KEY;
     }
-    
+
     return null;
 }
 
@@ -55,7 +55,7 @@ function promptForApiKey() {
         align-items: center;
         z-index: 10000;
     `;
-    
+
     const dialog = document.createElement('div');
     dialog.style.cssText = `
         background: white;
@@ -64,7 +64,7 @@ function promptForApiKey() {
         max-width: 500px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     `;
-    
+
     dialog.innerHTML = `
         <h2 style="margin-top: 0; color: #333;">🔑 API Key Required</h2>
         <p style="color: #666; line-height: 1.6;">
@@ -76,9 +76,9 @@ function promptForApiKey() {
             <li>Get your API key from your account page</li>
             <li>Paste it below (it will be saved in your browser)</li>
         </ol>
-        <input 
-            type="text" 
-            id="api-key-input" 
+        <input
+            type="text"
+            id="api-key-input"
             placeholder="Enter your API key here"
             style="
                 width: 100%;
@@ -91,7 +91,7 @@ function promptForApiKey() {
             "
         >
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button 
+            <button
                 id="cancel-btn"
                 style="
                     padding: 10px 20px;
@@ -103,7 +103,7 @@ function promptForApiKey() {
                     font-size: 14px;
                 "
             >Cancel</button>
-            <button 
+            <button
                 id="save-api-key-btn"
                 style="
                     padding: 10px 20px;
@@ -118,7 +118,7 @@ function promptForApiKey() {
             >Save API Key</button>
         </div>
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-            <button 
+            <button
                 id="manage-api-key-later"
                 style="
                     padding: 8px 16px;
@@ -133,22 +133,22 @@ function promptForApiKey() {
             >Skip for now (weather features will be disabled)</button>
         </div>
     `;
-    
+
     modal.appendChild(dialog);
     document.body.appendChild(modal);
-    
+
     const input = document.getElementById('api-key-input');
     const saveBtn = document.getElementById('save-api-key-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const skipBtn = document.getElementById('manage-api-key-later');
-    
+
     input.focus();
-    
+
     return new Promise((resolve) => {
         saveBtn.addEventListener('click', () => {
             const apiKey = input.value.trim();
             if (apiKey) {
-                localStorage.setItem('weatherApiKey', apiKey);
+                localStorage.setItem('duotemps_weather_api_key', apiKey);
                 document.body.removeChild(modal);
                 resolve(apiKey);
             } else {
@@ -156,17 +156,17 @@ function promptForApiKey() {
                 input.placeholder = 'Please enter a valid API key';
             }
         });
-        
+
         cancelBtn.addEventListener('click', () => {
             document.body.removeChild(modal);
             resolve(null);
         });
-        
+
         skipBtn.addEventListener('click', () => {
             document.body.removeChild(modal);
             resolve(null);
         });
-        
+
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 saveBtn.click();
@@ -179,16 +179,16 @@ function promptForApiKey() {
  * Show API key management in settings
  */
 function showApiKeySettings() {
-    const currentKey = localStorage.getItem('weatherApiKey');
-    const maskedKey = currentKey ? 
-        currentKey.substring(0, 8) + '...' + currentKey.substring(currentKey.length - 4) : 
+    const currentKey = localStorage.getItem('duotemps_weather_api_key');
+    const maskedKey = currentKey ?
+        currentKey.substring(0, 8) + '...' + currentKey.substring(currentKey.length - 4) :
         'Not set';
-    
+
     const result = confirm(
         `Current API Key: ${maskedKey}\n\n` +
         `Click OK to enter a new API key, or Cancel to keep the current one.`
     );
-    
+
     if (result) {
         promptForApiKey();
     }
@@ -575,7 +575,7 @@ let recentLocations = [];
 
 // Load recent locations from localStorage
 function loadRecentLocations() {
-    const stored = localStorage.getItem('recentLocations');
+    const stored = localStorage.getItem('duotemps_recent_locations');
     if (stored) {
         try {
             recentLocations = JSON.parse(stored);
@@ -588,7 +588,7 @@ function loadRecentLocations() {
 
 // Save recent locations to localStorage
 function saveRecentLocations() {
-    localStorage.setItem('recentLocations', JSON.stringify(recentLocations));
+    localStorage.setItem('duotemps_recent_locations', JSON.stringify(recentLocations));
 }
 
 // Add a location to recent locations list
@@ -958,7 +958,7 @@ updateDisplay();
 function toggleInfoSection() {
     const infoContent = document.getElementById('info-content');
     const toggleIcon = document.querySelector('.toggle-icon');
-    
+
     if (infoContent.style.display === 'none') {
         infoContent.style.display = 'block';
         toggleIcon.classList.add('rotated');
@@ -991,12 +991,12 @@ function applyTheme(isDark) {
         body.classList.remove('dark-theme');
         if (icon) icon.textContent = '🌙';
     }
-    localStorage.setItem('duotemps-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('duotemps_theme', isDark ? 'dark' : 'light');
 }
 
 // Load saved theme preference
 (function initTheme() {
-    const saved = localStorage.getItem('duotemps-theme');
+    const saved = localStorage.getItem('duotemps_theme');
     // Default to dark if system prefers dark and no saved preference
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(saved ? saved === 'dark' : prefersDark);
