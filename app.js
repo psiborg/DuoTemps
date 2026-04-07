@@ -12,7 +12,7 @@ function getApiKey() {
     // Check for GitHub Actions secret via URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const userParam = urlParams.get('user');
-
+    
     if (userParam) {
         // When user parameter is present, try to fetch from GitHub Actions
         // This assumes you've set up a GitHub Actions workflow that injects the key
@@ -21,20 +21,20 @@ function getApiKey() {
             return githubApiKey;
         }
     }
-
+    
     // Check localStorage for user-entered API key
-    const storedKey = localStorage.getItem('duotemps_weather_api_key');
+    const storedKey = localStorage.getItem('weatherApiKey');
     if (storedKey && storedKey !== 'your_actual_api_key_here') {
         return storedKey;
     }
-
+    
     // Check config.js
-    if (typeof WEATHER_API_KEY !== 'undefined' &&
-        WEATHER_API_KEY &&
+    if (typeof WEATHER_API_KEY !== 'undefined' && 
+        WEATHER_API_KEY && 
         WEATHER_API_KEY !== 'your_actual_api_key_here') {
         return WEATHER_API_KEY;
     }
-
+    
     return null;
 }
 
@@ -55,7 +55,7 @@ function promptForApiKey() {
         align-items: center;
         z-index: 10000;
     `;
-
+    
     const dialog = document.createElement('div');
     dialog.style.cssText = `
         background: white;
@@ -64,7 +64,7 @@ function promptForApiKey() {
         max-width: 500px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     `;
-
+    
     dialog.innerHTML = `
         <h2 style="margin-top: 0; color: #333;">🔑 API Key Required</h2>
         <p style="color: #666; line-height: 1.6;">
@@ -76,9 +76,9 @@ function promptForApiKey() {
             <li>Get your API key from your account page</li>
             <li>Paste it below (it will be saved in your browser)</li>
         </ol>
-        <input
-            type="text"
-            id="api-key-input"
+        <input 
+            type="text" 
+            id="api-key-input" 
             placeholder="Enter your API key here"
             style="
                 width: 100%;
@@ -91,7 +91,7 @@ function promptForApiKey() {
             "
         >
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button
+            <button 
                 id="cancel-btn"
                 style="
                     padding: 10px 20px;
@@ -103,7 +103,7 @@ function promptForApiKey() {
                     font-size: 14px;
                 "
             >Cancel</button>
-            <button
+            <button 
                 id="save-api-key-btn"
                 style="
                     padding: 10px 20px;
@@ -118,7 +118,7 @@ function promptForApiKey() {
             >Save API Key</button>
         </div>
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-            <button
+            <button 
                 id="manage-api-key-later"
                 style="
                     padding: 8px 16px;
@@ -133,22 +133,22 @@ function promptForApiKey() {
             >Skip for now (weather features will be disabled)</button>
         </div>
     `;
-
+    
     modal.appendChild(dialog);
     document.body.appendChild(modal);
-
+    
     const input = document.getElementById('api-key-input');
     const saveBtn = document.getElementById('save-api-key-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const skipBtn = document.getElementById('manage-api-key-later');
-
+    
     input.focus();
-
+    
     return new Promise((resolve) => {
         saveBtn.addEventListener('click', () => {
             const apiKey = input.value.trim();
             if (apiKey) {
-                localStorage.setItem('duotemps_weather_api_key', apiKey);
+                localStorage.setItem('weatherApiKey', apiKey);
                 document.body.removeChild(modal);
                 resolve(apiKey);
             } else {
@@ -156,17 +156,17 @@ function promptForApiKey() {
                 input.placeholder = 'Please enter a valid API key';
             }
         });
-
+        
         cancelBtn.addEventListener('click', () => {
             document.body.removeChild(modal);
             resolve(null);
         });
-
+        
         skipBtn.addEventListener('click', () => {
             document.body.removeChild(modal);
             resolve(null);
         });
-
+        
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 saveBtn.click();
@@ -179,16 +179,16 @@ function promptForApiKey() {
  * Show API key management in settings
  */
 function showApiKeySettings() {
-    const currentKey = localStorage.getItem('duotemps_weather_api_key');
-    const maskedKey = currentKey ?
-        currentKey.substring(0, 8) + '...' + currentKey.substring(currentKey.length - 4) :
+    const currentKey = localStorage.getItem('weatherApiKey');
+    const maskedKey = currentKey ? 
+        currentKey.substring(0, 8) + '...' + currentKey.substring(currentKey.length - 4) : 
         'Not set';
-
+    
     const result = confirm(
         `Current API Key: ${maskedKey}\n\n` +
         `Click OK to enter a new API key, or Cancel to keep the current one.`
     );
-
+    
     if (result) {
         promptForApiKey();
     }
@@ -199,9 +199,9 @@ function showApiKeySettings() {
 // =============================================================================
 
 // Temperature range constants for visualization
-const MIN_TEMP_C = -50;
-const MAX_TEMP_C = 60;
-const TEMP_RANGE_C = MAX_TEMP_C - MIN_TEMP_C; // 110°C range
+const MIN_TEMP_C = -40;
+const MAX_TEMP_C = 100;
+const TEMP_RANGE_C = MAX_TEMP_C - MIN_TEMP_C; // 140°C range
 
 // DOM element references
 const celsiusInput = document.getElementById('celsius');
@@ -222,6 +222,10 @@ const feelsLikeC = document.getElementById('feels-like-c');
 const feelsLikeF = document.getElementById('feels-like-f');
 const methodC = document.getElementById('method-c');
 const methodF = document.getElementById('method-f');
+
+// Chart state — declared here so updateDisplay() can reference them safely
+let scaleChartInstance = null;
+let scaleChartLoaded = false;
 
 // Position threshold lines on Celsius thermometer
 // Wind Chill line at 10°C
@@ -443,6 +447,9 @@ function updateDisplay() {
     //feelsLikeF.textContent = celsiusToFahrenheit(Math.round(feelsLikeResult.temp)) + '°F';
     methodC.textContent = feelsLikeResult.method;
     methodF.textContent = feelsLikeResult.method;
+
+    // Update graph tab feels-like dot if chart is visible
+    updateScaleChartFeelsLike();
 }
 
 /**
@@ -575,7 +582,7 @@ let recentLocations = [];
 
 // Load recent locations from localStorage
 function loadRecentLocations() {
-    const stored = localStorage.getItem('duotemps_recent_locations');
+    const stored = localStorage.getItem('recentLocations');
     if (stored) {
         try {
             recentLocations = JSON.parse(stored);
@@ -588,7 +595,7 @@ function loadRecentLocations() {
 
 // Save recent locations to localStorage
 function saveRecentLocations() {
-    localStorage.setItem('duotemps_recent_locations', JSON.stringify(recentLocations));
+    localStorage.setItem('recentLocations', JSON.stringify(recentLocations));
 }
 
 // Add a location to recent locations list
@@ -920,6 +927,8 @@ function toggleOrientation() {
         thresholdLines.forEach(line => line.classList.add('horizontal'));
         thresholdLabels.forEach(label => label.classList.add('horizontal'));
         orientationIcon.textContent = '↔️';
+        const orientationLabel = document.getElementById('orientation-label');
+        if (orientationLabel) orientationLabel.textContent = 'Horizontal thermometers';
     } else {
         thermometerSection.classList.remove('horizontal');
         thermometerContainers.forEach(container => container.classList.remove('horizontal'));
@@ -932,6 +941,8 @@ function toggleOrientation() {
         thresholdLines.forEach(line => line.classList.remove('horizontal'));
         thresholdLabels.forEach(label => label.classList.remove('horizontal'));
         orientationIcon.textContent = '↕️';
+        const orientationLabel = document.getElementById('orientation-label');
+        if (orientationLabel) orientationLabel.textContent = 'Vertical thermometers';
     }
 
     // Update display to recalculate positions
@@ -955,10 +966,158 @@ updateDisplay();
 /**
  * Toggle the info section visibility
  */
+function initScaleChart() {
+    if (scaleChartInstance || !document.getElementById('scale-chart')) return;
+    if (typeof Chart === 'undefined') {
+        // Load Chart.js dynamically then init
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+        s.onload = buildScaleChart;
+        document.head.appendChild(s);
+    } else {
+        buildScaleChart();
+    }
+}
+
+function buildScaleChart() {
+    const canvas = document.getElementById('scale-chart');
+    if (!canvas || scaleChartInstance) return;
+    const isDark = document.body.classList.contains('dark-theme');
+    const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(136,135,128,0.15)';
+    const tickColor = isDark ? '#888' : '#888780';
+    const borderColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(136,135,128,0.3)';
+
+    const temps = [];
+    for (let c = -80; c <= 100; c += 5) temps.push(c);
+
+    // Get current feels-like values for the initial dot
+    const tempC = parseFloat(celsiusInput.value) || 0;
+    const windKmh = parseFloat(windSpeedSlider.value) || 0;
+    const humidity = parseFloat(humiditySlider.value) || 50;
+    const feelsLike = calculateFeelsLike(tempC, windKmh, humidity);
+    const flC = feelsLike.temp;
+    const flF = celsiusToFahrenheit(flC);
+
+    scaleChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: temps,
+            datasets: [
+                {
+                    label: 'Fahrenheit',
+                    data: temps.map(c => (c * 9/5) + 32),
+                    borderColor: '#D85A30',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0
+                },
+                {
+                    label: 'Celsius',
+                    data: temps.map(c => c),
+                    borderColor: '#185FA5',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0
+                },
+                {
+                    label: 'Intersection',
+                    data: temps.map(c => c === -40 ? -40 : null),
+                    borderColor: 'transparent',
+                    backgroundColor: 'transparent',
+                    pointRadius: temps.map(c => c === -40 ? 6 : 0),
+                    pointBackgroundColor: '#7F77DD',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    showLine: false
+                },
+                {
+                    label: 'Feels Like °C',
+                    data: [{ x: flC, y: flC }],
+                    type: 'scatter',
+                    pointRadius: 8,
+                    pointHoverRadius: 10,
+                    pointBackgroundColor: '#27ae60',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    showLine: false
+                },
+                {
+                    label: 'Feels Like °F',
+                    data: [{ x: flC, y: flF }],
+                    type: 'scatter',
+                    pointRadius: 8,
+                    pointHoverRadius: 10,
+                    pointBackgroundColor: '#27ae60',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    showLine: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'nearest', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: () => '',
+                        label: ctx => {
+                            if (ctx.datasetIndex === 0) return 'F: ' + ctx.parsed.y.toFixed(1) + '°F at ' + ctx.parsed.x.toFixed(1) + '°C';
+                            if (ctx.datasetIndex === 1) return 'C: ' + ctx.parsed.y.toFixed(1) + '°C';
+                            if (ctx.datasetIndex === 3) return 'Feels Like: ' + ctx.parsed.y.toFixed(1) + '°C';
+                            if (ctx.datasetIndex === 4) return 'Feels Like: ' + ctx.parsed.y.toFixed(1) + '°F';
+                            return null;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear', min: -80, max: 100,
+                    title: { display: true, text: 'Celsius (°C)', color: tickColor, font: { size: 10, weight: '400' } },
+                    ticks: { callback: v => v + '°', stepSize: 20, color: tickColor, font: { size: 10 } },
+                    grid: { color: gridColor },
+                    border: { color: borderColor }
+                },
+                y: {
+                    min: -80, max: 220,
+                    title: { display: true, text: 'Fahrenheit (°F)', color: tickColor, font: { size: 10, weight: '400' } },
+                    ticks: { callback: v => v, stepSize: 40, color: tickColor, font: { size: 10 } },
+                    grid: {
+                        color: ctx => ctx.tick.value === -40 ? 'rgba(127,119,221,0.4)' : gridColor,
+                        lineWidth: ctx => ctx.tick.value === -40 ? 1.5 : 1
+                    },
+                    border: { color: borderColor }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Update the Feels Like dots on the scale chart
+ */
+function updateScaleChartFeelsLike() {
+    if (!scaleChartInstance) return;
+    const tempC = parseFloat(celsiusInput.value) || 0;
+    const windKmh = parseFloat(windSpeedSlider.value) || 0;
+    const humidity = parseFloat(humiditySlider.value) || 50;
+    const feelsLike = calculateFeelsLike(tempC, windKmh, humidity);
+    const flC = feelsLike.temp;
+    const flF = celsiusToFahrenheit(flC);
+    // datasets 3 = feels like °C dot, 4 = feels like °F dot
+    scaleChartInstance.data.datasets[3].data = [{ x: flC, y: flC }];
+    scaleChartInstance.data.datasets[4].data = [{ x: flC, y: flF }];
+    scaleChartInstance.update('none');
+}
+
 function toggleInfoSection() {
     const infoContent = document.getElementById('info-content');
-    const toggleIcon = document.querySelector('.toggle-icon');
-
+    const toggleIcon = infoContent.previousElementSibling.querySelector('.toggle-icon');
     if (infoContent.style.display === 'none') {
         infoContent.style.display = 'block';
         toggleIcon.classList.add('rotated');
@@ -974,35 +1133,102 @@ if (infoToggleBtn) {
     infoToggleBtn.addEventListener('click', toggleInfoSection);
 }
 
+// Scale comparison collapsible
+const scaleInfoToggleBtn = document.getElementById('scale-info-toggle');
+if (scaleInfoToggleBtn) {
+    scaleInfoToggleBtn.addEventListener('click', () => {
+        const content = document.getElementById('scale-info-content');
+        const icon = document.getElementById('scale-info-toggle-icon');
+        const isHidden = content.style.display === 'none';
+        content.style.display = isHidden ? 'block' : 'none';
+        icon.classList.toggle('rotated', isHidden);
+    });
+}
+
+// =============================================================================
+// VIZ TABS (Thermometers / Graph)
+// =============================================================================
+function switchVizTab(tabName) {
+    document.querySelectorAll('.viz-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    const panelThermo = document.getElementById('panel-thermometers');
+    const panelGraph  = document.getElementById('panel-graph');
+    if (tabName === 'graph') {
+        panelThermo.style.display = 'none';
+        panelGraph.style.display  = 'block';
+        // Init chart the first time the tab is opened
+        setTimeout(initScaleChart, 50);
+    } else {
+        panelGraph.style.display  = 'none';
+        panelThermo.style.display = '';
+    }
+}
+
+document.querySelectorAll('.viz-tab').forEach(btn => {
+    btn.addEventListener('click', () => switchVizTab(btn.dataset.tab));
+});
+
+// =============================================================================
+// SETTINGS MENU
+// =============================================================================
+
+function openMenu() {
+    document.getElementById('settings-menu').classList.add('open');
+    document.getElementById('menu-overlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMenu() {
+    document.getElementById('settings-menu').classList.remove('open');
+    document.getElementById('menu-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+const openMenuBtn = document.getElementById('open-menu');
+const closeMenuBtn = document.getElementById('close-menu');
+const menuOverlay = document.getElementById('menu-overlay');
+
+if (openMenuBtn) openMenuBtn.addEventListener('click', openMenu);
+if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
+if (menuOverlay) menuOverlay.addEventListener('click', closeMenu);
+
+// Close menu on escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+
 // =============================================================================
 // DARK THEME TOGGLE
 // =============================================================================
 
-/**
- * Apply theme (light or dark) and persist to localStorage
- */
-function applyTheme(isDark) {
-    const body = document.body;
+function updateThemeMenuLabel(isDark) {
     const icon = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+    if (label) label.textContent = isDark ? 'Light mode' : 'Dark mode';
+}
+
+function applyTheme(isDark) {
     if (isDark) {
-        body.classList.add('dark-theme');
-        if (icon) icon.textContent = '☀️';
+        document.body.classList.add('dark-theme');
     } else {
-        body.classList.remove('dark-theme');
-        if (icon) icon.textContent = '🌙';
+        document.body.classList.remove('dark-theme');
     }
-    localStorage.setItem('duotemps_theme', isDark ? 'dark' : 'light');
+    updateThemeMenuLabel(isDark);
+    localStorage.setItem('duotemps-theme', isDark ? 'dark' : 'light');
+    if (scaleChartInstance) {
+        scaleChartInstance.destroy();
+        scaleChartInstance = null;
+        buildScaleChart();
+    }
 }
 
 // Load saved theme preference
 (function initTheme() {
-    const saved = localStorage.getItem('duotemps_theme');
-    // Default to dark if system prefers dark and no saved preference
+    const saved = localStorage.getItem('duotemps-theme');
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(saved ? saved === 'dark' : prefersDark);
 })();
 
-// Wire up toggle button
 const toggleThemeBtn = document.getElementById('toggle-theme');
 if (toggleThemeBtn) {
     toggleThemeBtn.addEventListener('click', () => {
